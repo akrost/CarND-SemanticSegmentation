@@ -29,7 +29,7 @@ python main.py
 
 
 ## Result
-Here are examples outputs of the trained network:
+Here are example outputs of the trained network:
 
 ![Example1](./examples/example01.png)
 ![Example2](./examples/example02.png)
