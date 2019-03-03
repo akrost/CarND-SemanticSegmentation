@@ -57,21 +57,39 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # Conv - 7
-    layer7_conv = tf.layers.conv2d(vgg_layer7_out, num_classes, kernel_size=1, padding='same', name='layer7_conv')
+    layer7_conv = tf.layers.conv2d(vgg_layer7_out, num_classes, kernel_size=1,
+                                   padding='same', name='layer7_conv',
+                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                   kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     # DeConv - 7
-    layer7_deconv = tf.layers.conv2d_transpose(layer7_conv, num_classes, kernel_size=4, strides=(2,2), padding='same', name='layer7_deconv')
+    layer7_deconv = tf.layers.conv2d_transpose(layer7_conv, num_classes, kernel_size=4, strides=(2,2),
+                                               padding='same', name='layer7_deconv',
+                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                               kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     # Conv - 4
-    layer4_conv = tf.layers.conv2d(vgg_layer4_out, num_classes, kernel_size=1, padding='same', name='layer4_conv')
+    layer4_conv = tf.layers.conv2d(vgg_layer4_out, num_classes, kernel_size=1,
+                                   padding='same', name='layer4_conv',
+                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                   kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     # Skip - 4
     skip_4 = tf.add(layer7_deconv, layer4_conv)
     # DeConv - 4
-    layer4_deconv = tf.layers.conv2d_transpose(skip_4, num_classes, kernel_size=4, strides=(2,2), padding='same', name='layer4_deconv')
+    layer4_deconv = tf.layers.conv2d_transpose(skip_4, num_classes, kernel_size=4, strides=(2,2),
+                                               padding='same', name='layer4_deconv',
+                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                               kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     # Conv - 3
-    layer3_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, kernel_size=1, padding='same', name='layer3_conv')
+    layer3_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, kernel_size=1,
+                                   padding='same', name='layer3_conv',
+                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                   kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     # Skip - 3
     skip3 = tf.add(layer4_deconv, layer3_conv)
     # DeConv - 3
-    layer3_deconv = tf.layers.conv2d_transpose(skip3, num_classes, kernel_size=16, strides=(8,8), padding='same', name='layer3_deconv')
+    layer3_deconv = tf.layers.conv2d_transpose(skip3, num_classes, kernel_size=16, strides=(8,8),
+                                               padding='same', name='layer3_deconv',
+                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                               kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
 
     return layer3_deconv
 tests.test_layers(layers)
@@ -123,10 +141,10 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
                                 feed_dict={input_image: batch_input,
                                            correct_label: batch_label,
                                            keep_prob: 0.5,
-                                           learning_rate:1e-3})
+                                           learning_rate:1e-4})
         end_time = time.clock()
         time_delta = end_time - start_time
-        print("Epoch: {}/{}, Traning Time: {} seconds, Loss: {}".format(epoch, epochs, time_delta, loss))
+        print("Epoch: {}/{}, Training Time: {} seconds, Loss: {}".format(epoch, epochs, time_delta, loss))
 tests.test_train_nn(train_nn)
 
 
@@ -176,8 +194,6 @@ def run():
 
         # Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
-
-        # OPTIONAL: Apply the trained model to a video
 
 
 if __name__ == '__main__':
