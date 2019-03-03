@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os.path
+import os
 import tensorflow as tf
 import time
 import helper
@@ -70,7 +71,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     # Skip - 3
     skip3 = tf.add(layer4_deconv, layer3_conv)
     # DeConv - 3
-    layer3_deconv = tf.layers.conv2d_transpose(skip3, num_classes, kernel_size=4, strides=(2,2), padding='same', name='layer3_deconv')
+    layer3_deconv = tf.layers.conv2d_transpose(skip3, num_classes, kernel_size=16, strides=(8,8), padding='same', name='layer3_deconv')
 
     return layer3_deconv
 tests.test_layers(layers)
@@ -136,7 +137,7 @@ def run():
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
 
-    num_epochs = 10
+    num_epochs = 25
     batch_size = 1
 
     # Download pretrained vgg model
@@ -145,8 +146,13 @@ def run():
     # OPTIONAL: Train and Inference on the cityscapes dataset instead of the Kitti dataset.
     # You'll need a GPU with at least 10 teraFLOPS to train on.
     #  https://www.cityscapes-dataset.com/
+    #os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.gpu_options.allocator_type='BFC'
+    config.gpu_options.per_process_gpu_memory_fraction=0.90
 
-    with tf.Session() as sess:
+    with tf.Session(config=config) as sess:
         # Path to vgg model
         vgg_path = os.path.join(data_dir, 'vgg')
         # Create function to get batches
